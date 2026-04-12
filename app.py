@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
+import smtplib
+from email.message import EmailMessage
 
 app = Flask(__name__)
 app.secret_key = "secret123"
@@ -77,7 +79,6 @@ def submit():
     # AI check
     c.execute("SELECT username, dream FROM dreams")
     all_dreams = c.fetchall()
-
     similar = find_similar(dream, all_dreams)
 
     # save dream
@@ -89,6 +90,22 @@ def submit():
     conn.commit()
     conn.close()
 
+    # ---------------- EMAIL NOTIFICATION ----------------
+    try:
+        msg = EmailMessage()
+        msg.set_content(f"User: {username}\n\nDream:\n{dream}")
+        msg['Subject'] = "⚠️ New Dream Submitted"
+        msg['From'] = "your_email@gmail.com"
+        msg['To'] = "your_email@gmail.com"
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login("your_email@gmail.com", "your_app_password")
+            smtp.send_message(msg)
+
+    except Exception as e:
+        print("Email failed:", e)  # doesn't crash app
+
+    # ---------------- RESPONSE ----------------
     if len(similar) > 0:
         return "⚠️ Someone else has reported a similar dream..."
 
@@ -113,7 +130,7 @@ def reply():
 
     return redirect('/admin?key=secret123')
 
-# ---------------- ADMIN (SECRET ACCESS ONLY) ----------------
+# ---------------- ADMIN ----------------
 @app.route('/admin')
 def admin():
     if request.args.get("key") != "secret123":
