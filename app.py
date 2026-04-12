@@ -49,11 +49,8 @@ def find_similar(dream, all_dreams):
 @app.route('/')
 def home():
     try:
-        conn = sqlite3.connect('dreams.db')
-        c = conn.cursor()
-        c.execute("SELECT username, dream FROM dreams ORDER BY id DESC")
-        dreams = c.fetchall()
-        conn.close()
+        # DO NOT show dreams publicly anymore
+        dreams = []
         return render_template('index.html', dreams=dreams)
 
     except Exception as e:
@@ -85,9 +82,9 @@ def submit():
     conn.commit()
     conn.close()
 
-    # send email
+    # ---------------- EMAIL ----------------
     msg = EmailMessage()
-    msg.set_content(f"User: {username}\n\nDream:\n{dream}\n\nSimilar: {len(similar)} found")
+    msg.set_content(f"User: {username}\n\nDream:\n{dream}\n\nSimilar dreams found: {len(similar)}")
     msg['Subject'] = "⚠️ New Dream Submission"
     msg['From'] = "your_email@gmail.com"
     msg['To'] = "your_email@gmail.com"
@@ -96,8 +93,9 @@ def submit():
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login("ajiboyecomfort971@gmail.com", "fwtiozcenbzofirc")
             smtp.send_message(msg)
-    except:
-        return "Error sending email."
+
+    except Exception as e:
+        return f"Email error: {str(e)}"
 
     return "Your dream has been recorded."
 
