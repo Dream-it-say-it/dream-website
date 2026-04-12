@@ -80,7 +80,7 @@
 
 <!-- SUBMIT FORM -->
 <form action="/submit" method="post">
-    <input type="text" name="username" placeholder="Username (or Anonymous)">
+    <input type="text" name="username" placeholder="Username (optional)">
     <br>
     <textarea name="dream" placeholder="Describe your dream..." required></textarea>
     <br>
@@ -89,23 +89,12 @@
 
 <hr style="border:1px solid #222; width:60%;">
 
-<h2>Recent Signals</h2>
+<h2>Recent Signals (hidden from public logic now)</h2>
 
-<!-- DREAM DISPLAY -->
-{% for username, dream in dreams %}
-    <div class="dream">
-
-        <strong>👤 {{ username }}</strong>
-        <br><br>
-
-        🌘 {{ dream }}
-
-        <div class="warning">
-            “Have you seen this before?”
-        </div>
-
-    </div>
-{% endfor %}
+<p class="small-text">
+    Dreams are no longer publicly displayed.<br>
+    They are being recorded elsewhere.
+</p>
 
 </body>
 </html>
