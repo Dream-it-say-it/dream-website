@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
-import smtplib
-from email.message import EmailMessage
 
 app = Flask(__name__)
 app.secret_key = "secret123"
@@ -48,6 +46,7 @@ def find_similar(dream, all_dreams):
 # ---------------- HOME ----------------
 @app.route('/')
 def home():
+    # no public dreams anymore
     return render_template('index.html', dreams=[])
 
 # ---------------- SUBMIT ----------------
@@ -57,19 +56,11 @@ def submit():
         username = request.form.get('username', 'Anonymous')
         dream = request.form.get('dream')
 
-        # prevent crash if empty
         if not dream or dream.strip() == "":
             return "Please enter a dream."
 
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
-
-        # get old dreams
-        c.execute("SELECT username, dream FROM dreams")
-        all_dreams = c.fetchall()
-
-        # find similar
-        similar = find_similar(dream, all_dreams)
 
         # save dream
         c.execute("INSERT INTO dreams (username, dream) VALUES (?, ?)", (username, dream))
@@ -81,26 +72,24 @@ def submit():
         conn.commit()
         conn.close()
 
-        # ---------------- EMAIL ----------------
-        try:
-            msg = EmailMessage()
-            msg.set_content(f"User: {username}\n\nDream:\n{dream}\n\nSimilar: {len(similar)}")
-            msg['Subject'] = "⚠️ New Dream Submission"
-            msg['From'] = "your_email@gmail.com"
-            msg['To'] = "your_email@gmail.com"
-
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                smtp.login("ajiboyecomfort971@gmail.com", "qmcmpqefyuhxgmbl")
-                smtp.send_message(msg)
-
-        except Exception as e:
-            # email fails but app still works
-            print("Email failed:", e)
-
         return "Your dream has been recorded."
 
     except Exception as e:
         return f"Error: {str(e)}"
+
+# ---------------- ADMIN (PRIVATE) ----------------
+@app.route('/admin')
+def admin():
+    if request.args.get("key") != "secret123":
+        return "Access denied"
+
+    conn = sqlite3.connect('dreams.db')
+    c = conn.cursor()
+    c.execute("SELECT username, dream FROM dreams ORDER BY id DESC")
+    dreams = c.fetchall()
+    conn.close()
+
+    return render_template('admin.html', dreams=dreams)
 
 # ---------------- AUTH ----------------
 @app.route('/signup', methods=['GET','POST'])
