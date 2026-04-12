@@ -7,8 +7,12 @@
         body {
             background-color: black;
             color: #e0e0e0;
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             text-align: center;
+        }
+
+        h1 {
+            letter-spacing: 2px;
         }
 
         textarea, input {
@@ -28,44 +32,78 @@
             cursor: pointer;
         }
 
+        button:hover {
+            background: #333;
+        }
+
         .dream {
             border: 1px solid #333;
-            margin: 15px;
+            margin: 15px auto;
             padding: 15px;
             background: #0a0a0a;
+            width: 70%;
+            text-align: left;
+        }
+
+        .warning {
+            color: #ff4d4d;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-weight: normal;
+        }
+
+        .small-text {
+            color: #555;
+            font-size: 13px;
         }
     </style>
 
 </head>
+
 <body>
 
 <h1>🌙 WE DREAMED THIS</h1>
 
-<h2 style="color:#aaa; font-weight:normal;">
-    Have you seen them too?
-</h2>
+<h2 class="subtitle">Have you seen them too?</h2>
 
-<p style="color:#666; font-size:14px;">
-    Some people are dreaming the same beings...
+<p class="small-text">
+    Some people are dreaming the same beings...<br>
+    The same places...<br>
+    The same silence.
 </p>
-<p>Have you seen this before?</p>
 
+<hr style="border:1px solid #222; width:60%;">
+
+<!-- SUBMIT FORM -->
 <form action="/submit" method="post">
-    <input type="text" name="username" placeholder="Your name (or leave blank)">
+    <input type="text" name="username" placeholder="Username (or Anonymous)">
     <br>
     <textarea name="dream" placeholder="Describe your dream..." required></textarea>
     <br>
     <button type="submit">Submit Dream</button>
 </form>
 
-<hr>
+<hr style="border:1px solid #222; width:60%;">
 
-<h2>Recent Dreams</h2>
+<h2>Recent Signals</h2>
 
+<!-- DREAM DISPLAY -->
 {% for username, dream in dreams %}
     <div class="dream">
-        <strong>{{ username }}</strong><br><br>
-        {{ dream }}
+
+        <strong>👤 {{ username }}</strong>
+        <br><br>
+
+        🌘 {{ dream }}
+
+        <div class="warning">
+            “Have you seen this before?”
+        </div>
+
     </div>
 {% endfor %}
 
