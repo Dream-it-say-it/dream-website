@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect
 import sqlite3
 
 app = Flask(__name__)
@@ -8,15 +8,6 @@ app.secret_key = "secret123"
 def init_db():
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
-
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT,
-        streak INTEGER DEFAULT 0
-    )
-    ''')
 
     c.execute('''
     CREATE TABLE IF NOT EXISTS dreams (
@@ -90,11 +81,10 @@ def submit():
     similar = find_similar(dream, all_dreams)
 
     # save dream
-    c.execute("INSERT INTO dreams (username, dream) VALUES (?, ?)", (username, dream))
-
-    # streak
-    if username != "Anonymous":
-        c.execute("UPDATE users SET streak = streak + 1 WHERE username = ?", (username,))
+    c.execute(
+        "INSERT INTO dreams (username, dream) VALUES (?, ?)",
+        (username, dream)
+    )
 
     conn.commit()
     conn.close()
@@ -107,9 +97,6 @@ def submit():
 # ---------------- REPLY SYSTEM ----------------
 @app.route('/reply', methods=['POST'])
 def reply():
-    if 'user' not in session:
-        return redirect('/login')
-
     dream_id = request.form.get('dream_id')
     reply_text = request.form.get('reply')
 
@@ -124,13 +111,13 @@ def reply():
     conn.commit()
     conn.close()
 
-    return redirect('/admin')
+    return redirect('/admin?key=secret123')
 
-# ---------------- ADMIN ----------------
+# ---------------- ADMIN (SECRET ACCESS ONLY) ----------------
 @app.route('/admin')
 def admin():
-    if 'user' not in session:
-        return redirect('/login')
+    if request.args.get("key") != "secret123":
+        return "Access denied"
 
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
@@ -142,63 +129,6 @@ def admin():
 
     return render_template('admin.html', dreams=dreams)
 
-# ---------------- AUTH ----------------
-@app.route('/signup', methods=['GET','POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        if not username or not password:
-            return "Fill all fields."
-
-        conn = sqlite3.connect('dreams.db')
-        c = conn.cursor()
-
-        try:
-            c.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, password)
-            )
-            conn.commit()
-        except:
-            return "Username already exists."
-
-        conn.close()
-
-        return redirect('/login')
-
-    return render_template('signup.html')
-
-@app.route('/login', methods=['GET','POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        conn = sqlite3.connect('dreams.db')
-        c = conn.cursor()
-
-        c.execute(
-            "SELECT * FROM users WHERE username=? AND password=?",
-            (username, password)
-        )
-
-        user = c.fetchone()
-        conn.close()
-
-        if user:
-            session['user'] = username
-            return redirect('/admin')
-
-        return "Invalid login"
-
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect('/login')
-
+# ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
