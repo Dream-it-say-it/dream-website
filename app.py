@@ -90,7 +90,7 @@ def submit():
             msg['To'] = "your_email@gmail.com"
 
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                smtp.login("ajiboyecomfort971@gmail.com", "fwtiozcenbzofirc")
+                smtp.login("ajiboyecomfort971@gmail.com", "qmcmpqefyuhxgmbl")
                 smtp.send_message(msg)
 
         except Exception as e:
