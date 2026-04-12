@@ -1,33 +1,39 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+import smtplib
+from email.message import EmailMessage
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
+# ---------------- DATABASE ----------------
 def init_db():
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            password TEXT
-        )
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        password TEXT,
+        streak INTEGER DEFAULT 0
+    )
     ''')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS dreams (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            dream TEXT
-        )
+    CREATE TABLE IF NOT EXISTS dreams (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        dream TEXT
+    )
     ''')
 
     conn.commit()
     conn.close()
 
 init_db()
+
+# ---------------- AI MATCH ----------------
 def find_similar(dream, all_dreams):
     matches = []
     words = set(dream.lower().split())
@@ -39,6 +45,7 @@ def find_similar(dream, all_dreams):
 
     return matches
 
+# ---------------- HOME ----------------
 @app.route('/')
 def home():
     try:
@@ -51,25 +58,37 @@ def home():
 
     except Exception as e:
         return f"Error: {str(e)}"
-conn = sqlite3.connect('dreams.db')
-c = conn.cursor()
 
-c.execute("SELECT username, dream FROM dreams")
-all_dreams = c.fetchall()
-
-similar = find_similar(dream, all_dreams)
-
-import smtplib
-from email.message import EmailMessage
-
+# ---------------- SUBMIT ----------------
 @app.route('/submit', methods=['POST'])
 def submit():
     username = request.form.get('username', 'Anonymous')
     dream = request.form['dream']
 
+    conn = sqlite3.connect('dreams.db')
+    c = conn.cursor()
+
+    # get old dreams
+    c.execute("SELECT username, dream FROM dreams")
+    all_dreams = c.fetchall()
+
+    # find similar dreams
+    similar = find_similar(dream, all_dreams)
+
+    # save dream
+    c.execute("INSERT INTO dreams (username, dream) VALUES (?, ?)", (username, dream))
+
+    # update streak
+    if username != "Anonymous":
+        c.execute("UPDATE users SET streak = streak + 1 WHERE username = ?", (username,))
+
+    conn.commit()
+    conn.close()
+
+    # send email
     msg = EmailMessage()
-    msg.set_content(f"User: {username}\n\nDream:\n{dream}")
-    msg['Subject'] = "New Dream Submission"
+    msg.set_content(f"User: {username}\n\nDream:\n{dream}\n\nSimilar: {len(similar)} found")
+    msg['Subject'] = "⚠️ New Dream Submission"
     msg['From'] = "your_email@gmail.com"
     msg['To'] = "your_email@gmail.com"
 
@@ -78,24 +97,11 @@ def submit():
             smtp.login("ajiboyecomfort971@gmail.com", "fwtiozcenbzofirc")
             smtp.send_message(msg)
     except:
-        return "Error sending dream."
+        return "Error sending email."
 
     return "Your dream has been recorded."
-    if 'user' in session:
-        username = session['user']
-    else:
-        username = "Anonymous"
 
-    dream = request.form['dream']
-
-    conn = sqlite3.connect('dreams.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO dreams (username, dream) VALUES (?, ?)", (username, dream))
-    conn.commit()
-    conn.close()
-
-    return redirect('/')
-
+# ---------------- AUTH ----------------
 @app.route('/signup', methods=['GET','POST'])
 def signup():
     if request.method == 'POST':
@@ -136,4 +142,4 @@ def logout():
     return redirect('/')
 
 if __name__ == "__main__":
-  app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=10000)
