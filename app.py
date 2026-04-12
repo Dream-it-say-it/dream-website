@@ -28,6 +28,16 @@ def init_db():
     conn.close()
 
 init_db()
+def find_similar(dream, all_dreams):
+    matches = []
+    words = set(dream.lower().split())
+
+    for d in all_dreams:
+        common = words.intersection(set(d[1].lower().split()))
+        if len(common) > 2:
+            matches.append(d)
+
+    return matches
 
 @app.route('/')
 def home():
@@ -41,6 +51,13 @@ def home():
 
     except Exception as e:
         return f"Error: {str(e)}"
+conn = sqlite3.connect('dreams.db')
+c = conn.cursor()
+
+c.execute("SELECT username, dream FROM dreams")
+all_dreams = c.fetchall()
+
+similar = find_similar(dream, all_dreams)
 
 import smtplib
 from email.message import EmailMessage
