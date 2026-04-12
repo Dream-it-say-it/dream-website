@@ -12,7 +12,7 @@ def init_db():
     c.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
+        username TEXT UNIQUE,
         password TEXT,
         streak INTEGER DEFAULT 0
     )
@@ -45,6 +45,8 @@ def find_similar(dream, all_dreams):
     matches = []
 
     for d in all_dreams:
+        if not d[1]:
+            continue
         common = words.intersection(set(d[1].lower().split()))
         if len(common) >= 3:
             matches.append(d)
@@ -81,7 +83,7 @@ def submit():
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
 
-    # get old dreams for AI check
+    # AI check
     c.execute("SELECT username, dream FROM dreams")
     all_dreams = c.fetchall()
 
@@ -90,16 +92,16 @@ def submit():
     # save dream
     c.execute("INSERT INTO dreams (username, dream) VALUES (?, ?)", (username, dream))
 
-    # streak system
+    # streak
     if username != "Anonymous":
         c.execute("UPDATE users SET streak = streak + 1 WHERE username = ?", (username,))
 
     conn.commit()
     conn.close()
 
-    # response message
     if len(similar) > 0:
         return "⚠️ Someone else has reported a similar dream..."
+
     return "Your dream has been recorded."
 
 # ---------------- REPLY SYSTEM ----------------
@@ -114,14 +116,17 @@ def reply():
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
 
-    c.execute("INSERT INTO replies (dream_id, reply) VALUES (?, ?)", (dream_id, reply_text))
+    c.execute(
+        "INSERT INTO replies (dream_id, reply) VALUES (?, ?)",
+        (dream_id, reply_text)
+    )
 
     conn.commit()
     conn.close()
 
     return redirect('/admin')
 
-# ---------------- ADMIN (LOGIN PROTECTED) ----------------
+# ---------------- ADMIN ----------------
 @app.route('/admin')
 def admin():
     if 'user' not in session:
@@ -149,8 +154,16 @@ def signup():
 
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-        conn.commit()
+
+        try:
+            c.execute(
+                "INSERT INTO users (username, password) VALUES (?, ?)",
+                (username, password)
+            )
+            conn.commit()
+        except:
+            return "Username already exists."
+
         conn.close()
 
         return redirect('/login')
@@ -165,15 +178,20 @@ def login():
 
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+
+        c.execute(
+            "SELECT * FROM users WHERE username=? AND password=?",
+            (username, password)
+        )
+
         user = c.fetchone()
         conn.close()
 
         if user:
             session['user'] = username
             return redirect('/admin')
-        else:
-            return "Invalid login"
+
+        return "Invalid login"
 
     return render_template('login.html')
 
