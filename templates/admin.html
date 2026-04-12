@@ -1,6 +1,84 @@
-<h1>🔒 Dream Records</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dream Admin Panel</title>
+    <style>
+        body {
+            background: #0b0b0f;
+            color: #e6e6e6;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
 
+        h1 {
+            color: #ff3b3b;
+        }
+
+        .dream {
+            background: #1a1a24;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .reply {
+            color: #ffcc00;
+            margin-top: 10px;
+        }
+
+        input, button {
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            background: #ff3b3b;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ff1a1a;
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 15px;
+            background: #141420;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🔒 Dream Control Panel</h1>
+
+<!-- DREAM LIST -->
 {% for d in dreams %}
-    <p><b>{{ d[0] }}</b>: {{ d[1] }}</p>
-    <hr>
+    <div class="dream">
+        <p><b>User:</b> {{ d[1] }}</p>
+        <p><b>Dream:</b> {{ d[2] }}</p>
+
+        <!-- Reply form -->
+        <form method="POST" action="/reply">
+            <input type="hidden" name="dream_id" value="{{ d[0] }}">
+            <input type="text" name="reply" placeholder="Write a response..." required>
+            <button type="submit">Send Response</button>
+        </form>
+    </div>
 {% endfor %}
+
+<!-- TOP SYMBOLS SECTION -->
+{% if common %}
+<div class="stats">
+    <h2>📊 Top Symbols Detected</h2>
+    {% for word, count in common %}
+        <p>{{ word }} → {{ count }} times</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+</body>
+</html>
