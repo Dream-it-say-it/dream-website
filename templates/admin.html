@@ -18,13 +18,18 @@
         .dream {
             background: #1a1a24;
             padding: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border-radius: 8px;
         }
 
-        .reply {
+        .reply-box {
+            margin-top: 10px;
+        }
+
+        .existing-reply {
             color: #ffcc00;
             margin-top: 10px;
+            font-style: italic;
         }
 
         input, button {
@@ -54,19 +59,26 @@
 
 <h1>🔒 Dream Control Panel</h1>
 
-<!-- DREAM LIST -->
 {% if dreams %}
     {% for d in dreams %}
         <div class="dream">
             <p><b>User:</b> {{ d[1] }}</p>
             <p><b>Dream:</b> {{ d[2] }}</p>
 
+            <!-- SHOW EXISTING REPLY -->
+            {% if d|length > 3 and d[3] %}
+                <p class="existing-reply">🧠 Your Response: {{ d[3] }}</p>
+            {% endif %}
+
             <!-- Reply form -->
-            <form method="POST" action="/reply">
-                <input type="hidden" name="dream_id" value="{{ d[0] }}">
-                <input type="text" name="reply" placeholder="Write a response..." required>
-                <button type="submit">Send Response</button>
-            </form>
+            <div class="reply-box">
+                <form method="POST" action="/reply">
+                    <input type="hidden" name="dream_id" value="{{ d[0] }}">
+                    <input type="text" name="reply" placeholder="Write a response..." required>
+                    <br>
+                    <button type="submit">Send Response</button>
+                </form>
+            </div>
         </div>
     {% endfor %}
 {% else %}
