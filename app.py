@@ -31,12 +31,16 @@ init_db()
 
 @app.route('/')
 def home():
-    conn = sqlite3.connect('dreams.db')
-    c = conn.cursor()
-    c.execute("SELECT username, dream FROM dreams ORDER BY id DESC")
-    dreams = c.fetchall()
-    conn.close()
-    return render_template('index.html', dreams=dreams)
+    try:
+        conn = sqlite3.connect('dreams.db')
+        c = conn.cursor()
+        c.execute("SELECT username, dream FROM dreams ORDER BY id DESC")
+        dreams = c.fetchall()
+        conn.close()
+        return render_template('index.html', dreams=dreams)
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @app.route('/submit', methods=['POST'])
 def submit():
