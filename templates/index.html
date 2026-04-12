@@ -45,20 +45,24 @@
             text-align: left;
         }
 
-        .warning {
-            color: #ff4d4d;
-            font-size: 13px;
+        .reply {
+            color: #ffcc00;
             margin-top: 10px;
         }
 
         .subtitle {
             color: #888;
-            font-weight: normal;
         }
 
         .small-text {
             color: #555;
             font-size: 13px;
+        }
+
+        .warning {
+            color: #ff4d4d;
+            font-size: 13px;
+            margin-top: 10px;
         }
     </style>
 
@@ -80,21 +84,38 @@
 
 <!-- SUBMIT FORM -->
 <form action="/submit" method="post">
-    <input type="text" name="username" placeholder="Username (optional)">
+    <input type="text" name="username" placeholder="Anonymous (or name)">
     <br>
-    <textarea name="dream" placeholder="Describe your dream..." required></textarea>
+    <textarea name="dream" placeholder="Describe what you saw..." required></textarea>
     <br>
     <button type="submit">Submit Dream</button>
 </form>
 
 <hr style="border:1px solid #222; width:60%;">
 
-<h2>Recent Signals (hidden from public logic now)</h2>
+<h2>Recent Signals</h2>
 
 <p class="small-text">
-    Dreams are no longer publicly displayed.<br>
-    They are being recorded elsewhere.
+    These are fragments being reported.
 </p>
+
+<!-- DREAM FEED -->
+{% if dreams %}
+    {% for d in dreams %}
+        <div class="dream">
+            <p><b>{{ d[1] }}</b>:</p>
+            <p>{{ d[2] }}</p>
+
+            {% if d[3] %}
+                <div class="reply">
+                    ⚠️ Response: {{ d[3] }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="small-text">No signals yet...</p>
+{% endif %}
 
 </body>
 </html>
