@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dream Admin Panel</title>
+    <title>Dream Control Panel</title>
+
     <style>
         body {
             background: #0b0b0f;
@@ -42,11 +43,9 @@
             background: #ff1a1a;
         }
 
-        .stats {
-            margin-top: 30px;
-            padding: 15px;
-            background: #141420;
-            border-radius: 8px;
+        .empty {
+            color: #888;
+            font-style: italic;
         }
     </style>
 </head>
@@ -56,28 +55,22 @@
 <h1>🔒 Dream Control Panel</h1>
 
 <!-- DREAM LIST -->
-{% for d in dreams %}
-    <div class="dream">
-        <p><b>User:</b> {{ d[1] }}</p>
-        <p><b>Dream:</b> {{ d[2] }}</p>
+{% if dreams %}
+    {% for d in dreams %}
+        <div class="dream">
+            <p><b>User:</b> {{ d[1] }}</p>
+            <p><b>Dream:</b> {{ d[2] }}</p>
 
-        <!-- Reply form -->
-        <form method="POST" action="/reply">
-            <input type="hidden" name="dream_id" value="{{ d[0] }}">
-            <input type="text" name="reply" placeholder="Write a response..." required>
-            <button type="submit">Send Response</button>
-        </form>
-    </div>
-{% endfor %}
-
-<!-- TOP SYMBOLS SECTION -->
-{% if common %}
-<div class="stats">
-    <h2>📊 Top Symbols Detected</h2>
-    {% for word, count in common %}
-        <p>{{ word }} → {{ count }} times</p>
+            <!-- Reply form -->
+            <form method="POST" action="/reply">
+                <input type="hidden" name="dream_id" value="{{ d[0] }}">
+                <input type="text" name="reply" placeholder="Write a response..." required>
+                <button type="submit">Send Response</button>
+            </form>
+        </div>
     {% endfor %}
-</div>
+{% else %}
+    <p class="empty">No dreams recorded yet...</p>
 {% endif %}
 
 </body>
