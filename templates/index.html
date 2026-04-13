@@ -5,14 +5,36 @@
 
     <style>
         body {
-            background-color: black;
-            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
+
+            /* BACKGROUND IMAGE */
+            background: url("/static/bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: #e0e0e0;
+        }
+
+        /* DARK OVERLAY */
+        .overlay {
+            background: rgba(0, 0, 0, 0.75);
+            min-height: 100vh;
+            padding: 20px;
             text-align: center;
         }
 
         h1 {
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            color: #aaa;
+        }
+
+        .small-text {
+            color: #666;
+            font-size: 13px;
         }
 
         textarea, input {
@@ -26,37 +48,30 @@
 
         button {
             padding: 10px 20px;
-            background: #222;
+            background: #8b0000;
             color: white;
             border: none;
             cursor: pointer;
         }
 
         button:hover {
-            background: #333;
+            background: #b30000;
         }
 
         .dream {
             border: 1px solid #333;
             margin: 15px auto;
             padding: 15px;
-            background: #0a0a0a;
+            background: rgba(10, 10, 10, 0.85);
             width: 70%;
             text-align: left;
+            border-radius: 8px;
         }
 
         .reply {
             color: #ffcc00;
             margin-top: 10px;
-        }
-
-        .subtitle {
-            color: #888;
-        }
-
-        .small-text {
-            color: #555;
-            font-size: 13px;
+            font-style: italic;
         }
 
         .warning {
@@ -64,11 +79,18 @@
             font-size: 13px;
             margin-top: 10px;
         }
+
+        hr {
+            border: 1px solid #222;
+            width: 60%;
+        }
     </style>
 
 </head>
 
 <body>
+
+<div class="overlay">
 
 <h1>🌙 WE DREAMED THIS</h1>
 
@@ -80,7 +102,7 @@
     The same silence.
 </p>
 
-<hr style="border:1px solid #222; width:60%;">
+<hr>
 
 <!-- SUBMIT FORM -->
 <form action="/submit" method="post">
@@ -91,7 +113,7 @@
     <button type="submit">Submit Dream</button>
 </form>
 
-<hr style="border:1px solid #222; width:60%;">
+<hr>
 
 <h2>Recent Signals</h2>
 
@@ -116,6 +138,8 @@
 {% else %}
     <p class="small-text">No signals yet...</p>
 {% endif %}
+
+</div>
 
 </body>
 </html>
